@@ -1,2 +1,5 @@
 # toy_server
 a simple server with some strange abilities
+
+[20170602] Everything starts with a simplest server program: time server. But if there is some imagination, everything will be different.
+
