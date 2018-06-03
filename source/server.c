@@ -1,13 +1,16 @@
 #include<stdio.h>
+#include<unistd.h>
 #include<netinet/in.h>
 #include<sys/socket.h>
 #include<arpa/inet.h>
 #include<string.h>
 #include<time.h>
 
+#include"toyServer.h"
+
 #define MAXLINE 1024
 #define LISTENQ 1024
-int main(int argc, char** argv)
+int toyServer(int argc, char** argv)
 {
    int listenfd, connfd;
    struct sockaddr_in servaddr;
@@ -21,7 +24,7 @@ int main(int argc, char** argv)
    servaddr.sin_addr.s_addr=htonl(INADDR_ANY);
    servaddr.sin_port=htons(60030);
 
-   bind(listenfd, (struct socksddr*)&servaddr, sizeof(servaddr));
+   bind(listenfd, (const struct sockaddr*)&servaddr, sizeof(servaddr));
    listen(listenfd, LISTENQ);
 
    for(;;)

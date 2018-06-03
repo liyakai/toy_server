@@ -6,9 +6,11 @@
 #include<string.h>
 #include<unistd.h>
 
+#include "toyServer.h"
+
 #define MAXLINE (1024)
 
-int main(int argc, char** argv)
+int toyClient(int argc, char** argv)
 {
     int sockfd, n;
     char recvline[MAXLINE+1];
