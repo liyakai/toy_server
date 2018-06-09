@@ -13,7 +13,8 @@
 int toyServer(int argc, char** argv)
 {
    int listenfd, connfd;
-   struct sockaddr_in servaddr;
+   struct sockaddr_in servaddr, clientaddr;
+   socklen_t len;
    char buff[MAXLINE];
    time_t ticks;
 
@@ -29,7 +30,8 @@ int toyServer(int argc, char** argv)
 
    for(;;)
    {
-       connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
+       connfd = accept(listenfd, (struct sockaddr*)&clientaddr, &len);
+	   fprintf(stderr, "connection from %s, port %d\n", inet_ntop(AF_INET, &clientaddr.sin_addr, buff,sizeof(buff)), ntohs(clientaddr.sin_port));
        ticks = time(NULL);
        snprintf(buff, sizeof(buff), "ctime:%s\r\n",ctime(&ticks));
        write(connfd, buff, strlen(buff));
