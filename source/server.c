@@ -8,6 +8,8 @@
 
 #include"toyServer.h"
 
+
+int processRequest(int connfd);
 #define MAXLINE 1024
 #define LISTENQ 1024
 int toyServer(int argc, char** argv)
@@ -15,8 +17,8 @@ int toyServer(int argc, char** argv)
    int listenfd, connfd;
    struct sockaddr_in servaddr, clientaddr;
    socklen_t len;
+   pid_t pid;
    char buff[MAXLINE];
-   time_t ticks;
 
    listenfd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -32,11 +34,25 @@ int toyServer(int argc, char** argv)
    {
        connfd = accept(listenfd, (struct sockaddr*)&clientaddr, &len);
 	   fprintf(stderr, "connection from %s, port %d\n", inet_ntop(AF_INET, &clientaddr.sin_addr, buff,sizeof(buff)), ntohs(clientaddr.sin_port));
-       ticks = time(NULL);
-       snprintf(buff, sizeof(buff), "ctime:%s\r\n",ctime(&ticks));
-       write(connfd, buff, strlen(buff));
-
+	   if((pid = fork()) == 0)
+	   {
+		   close(listenfd);
+           processRequest(connfd);
+		   close(connfd);
+		   return 0;
+	   }
        close(connfd);
    }
     return 0;
 }
+
+int processRequest(int connfd)
+{
+    char buff[MAXLINE];
+    time_t ticks;
+    ticks = time(NULL);
+    snprintf(buff, sizeof(buff), "ctime:%s\r\n",ctime(&ticks));
+    write(connfd, buff, strlen(buff));
+	return 0;
+}
+
