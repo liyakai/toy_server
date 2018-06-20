@@ -6,12 +6,13 @@
 #include<string.h>
 #include<time.h>
 
-#include"toyServer.h"
+#include"toyServer_private.h"
 
 
 int processRequest(int connfd);
 #define MAXLINE 1024
 #define LISTENQ 1024
+
 int toyServer(int argc, char** argv)
 {
    int listenfd, connfd;

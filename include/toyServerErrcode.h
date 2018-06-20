@@ -17,9 +17,13 @@
 #define SEC_TOYSERVER_LIB_ENDNO                    0x1010FFF
 
 // API: 0x000~0x0ff
-#define SEC_TOYSERVER_API_BASENO                   (SEC_TOYSERVER_LIB_BASENO + 0x00)
+#define SEC_TOYSERVER_API_BASENO                   (SEC_TOYSERVER_LIB_BASENO + 0x000)
 #define SEC_API_LOG_INIT_FAIL                      (SEC_TOYSERVER_API_BASENO + 0x01)
 
+
+// connection : 0x100~0x1ff
+#define SEC_TOYSERVER_CONN_BASENO                  (SEC_TOYSERVER_LIB_BASENO + 0x100)
+#define SEC_CONN_READ_CERTFILE_FAIL                (SEC_TOYSERVER_CONN_BASENO + 0x01)
 
 #endif  // TOY_SERVER_ERRCODE
 
