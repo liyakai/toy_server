@@ -16,11 +16,12 @@ int processRequest(int connfd);
 int toyServer(int argc, char** argv)
 {
    int listenfd, connfd;
-   struct sockaddr_in servaddr, clientaddr;
+//   struct sockaddr_in servaddr, clientaddr;
+   struct sockaddr_in  clientaddr;
    socklen_t len;
    pid_t pid;
    char buff[MAXLINE];
-
+#if 0
    listenfd = socket(AF_INET, SOCK_STREAM, 0);
 
    memset(&servaddr, 0, sizeof(servaddr));
@@ -30,7 +31,8 @@ int toyServer(int argc, char** argv)
 
    bind(listenfd, (const struct sockaddr*)&servaddr, sizeof(servaddr));
    listen(listenfd, LISTENQ);
-
+#endif
+   listenfd = openListener(60030);
    for(;;)
    {
        connfd = accept(listenfd, (struct sockaddr*)&clientaddr, &len);
