@@ -27,6 +27,30 @@ int openListener(int port)
 	return sd;
 }
 
+int openConnection(const char* ipAddr, int port)
+{
+	int sd;
+	struct sockaddr_in addr;
+	sd = socket(AF_INET, SOCK_STREAM, 0);
+	memset(&addr, 0, sizeof(addr));
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons(port);
+    if(inet_pton(AF_INET, ipAddr, &addr.sin_addr) <= 0)
+	{
+		fprintf(stderr, "inet_pton error for %s", ipAddr);
+		return SEC_CONN_CLIENT_INETPTON_FAIL;
+	}	
+	
+	
+	if(connect(sd, (struct sockaddr*)&addr, sizeof(addr)) != 0)
+	{
+		close(sd);
+		fprintf(stderr, "client connect failed.\n");
+		return SEC_CONN_CLIENT_CONNECT_FAIL;
+	}
+	return sd;
+}
+
 SSL_CTX* InitServerSslCtx(void)
 {
 	SSL_CTX * ctx = NULL;

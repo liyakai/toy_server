@@ -6,7 +6,7 @@
 #include<string.h>
 #include<unistd.h>
 
-#include "toyServer.h"
+#include "toyServer_private.h"
 
 #define MAXLINE (1024)
 
@@ -14,7 +14,8 @@ int toyClient(int argc, char** argv)
 {
     int sockfd, n;
     char recvline[MAXLINE+1];
-    struct sockaddr_in servaddr;
+#if 0
+	struct sockaddr_in servaddr;
 
     if(argc != 2)
     {
@@ -42,6 +43,8 @@ int toyClient(int argc, char** argv)
         fprintf(stderr, "connect error.");
 		return -1;
     }
+#endif
+    sockfd =  openConnection(argv[1], 60030);
     while((n = read(sockfd, recvline, MAXLINE)) > 0)
     {
         recvline[n] = 0;
