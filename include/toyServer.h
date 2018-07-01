@@ -15,9 +15,25 @@ extern "C" {
 #define TOY_SERVER_API __attribute__ ((visibility("default")))
 #endif
 
-TOY_SERVER_API int toyClient(int argc, char** argv);
-TOY_SERVER_API int toyServer(int argc, char** argv);
+typedef struct tagSecSerSetting
+{
+	int bUseSSL;
+	const char* pszServerCert;
+	const char* pszServerKey;
+} TSecSerSetting;
 
+TOY_SERVER_API int toyServerCreate(TSecSerSetting *tSetting, void** phInstance);
+TOY_SERVER_API int toyServerDestroy(void* phInstance);
+TOY_SERVER_API int toyServer(void* phInstance, int argc, char** argv);
+
+typedef struct tagSecCliSetting
+{
+	int bUseSSL;
+} TSecCliSetting;
+
+TOY_SERVER_API int toyClientSessionCreate(TSecCliSetting *tSetting, void** phSession);
+TOY_SERVER_API int toyClientSessionDestroy(void* phSession);
+TOY_SERVER_API int toyClient(void* phSession, int argc, char** argv);
 #ifdef  __cplusplus
 }
 #endif
