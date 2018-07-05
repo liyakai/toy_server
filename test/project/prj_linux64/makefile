@@ -6,7 +6,7 @@ CFLAGS = -Wall -Werror -g
 DIR_INCLUDE = -I../../../include
 DIR_LDFLAGS = -L../../../libs/ -Wl,-rpath ../../../libs/ -ltoyserver -ldl -lcrypto -lssl -lpthread
 
-all: cplib serverTest clientTest
+all: serverTest clientTest
 
 serverTest : $(DIR_SRC)/serverTest.c
 	rm -f $@

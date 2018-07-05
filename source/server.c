@@ -94,7 +94,12 @@ int toyServer(void*phInstance, int argc, char** argv)
 		   return rv;
 	   }
    }
-   listenfd = openListener(60030);
+   if(argc < 1)
+   {
+       fprintf(stderr, "short of port.\n");
+       return -1;
+   }
+   listenfd = openListener(atoi(argv[1]));
    for(;;)
    {
        connfd = accept(listenfd, (struct sockaddr*)&clientaddr, &len);
