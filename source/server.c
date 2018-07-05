@@ -132,6 +132,7 @@ int toyServer(void*phInstance, int argc, char** argv)
 int processRequest(void*phInstance)
 {
 	int rv = 0;
+    int i = 0;
     char buff[MAXLINE];
     time_t ticks;
     ticks = time(NULL);
@@ -142,7 +143,7 @@ int processRequest(void*phInstance)
 	
 	fprintf(stderr,"processRequest.\n");
     snprintf(buff, sizeof(buff), "ctime:%s\r\n",ctime(&ticks));
-    for(int i = 0; i < 1; i++)
+    for(i = 0; i < 1; i++)
 	{
 	    rv = toySerWrite(phInstance, buff, strlen(buff));
     	if(rv < 0)
