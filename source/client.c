@@ -53,8 +53,13 @@ int toyClient(void*phSession, int argc, char** argv)
     unsigned long ulErr = 0;
     char szErrMsg[1024] = {0};
     char *pTmp = NULL;
-	
-	sockfd =  openConnection(argv[1], 60030);
+	 
+    if(argc < 2)
+    {
+        fprintf(stderr, "usage:xxx IPaddr port\n");
+    }
+
+	sockfd =  openConnection(argv[1], atoi(argv[2]));
     ((tCliSession*)phSession) -> sockfd = sockfd;
 	if(((tCliSession*)phSession) -> bUseSSL)
 	//if(1)
@@ -87,7 +92,11 @@ int toyClient(void*phSession, int argc, char** argv)
 		SSL_CTX_free(ssl_ctx);
 	}
     fprintf(stderr, "###########toyClient  tag 5\n");
+<<<<<<< HEAD
     while((n = toyCliRead(phSession, recvline, MAXLINE)) > 0)
+=======
+	while((n = toyCliRead(phSession, recvline, MAXLINE)) > 0)
+>>>>>>> 2ca116daf386db45503a66c52d2ac25724ee1efb
     //while((n = SSL_read(((tCliSession*)phSession) -> ssl, recvline, MAXLINE)) > 0)
     {
         recvline[n] = 0;
