@@ -92,11 +92,7 @@ int toyClient(void*phSession, int argc, char** argv)
 		SSL_CTX_free(ssl_ctx);
 	}
     fprintf(stderr, "###########toyClient  tag 5\n");
-<<<<<<< HEAD
     while((n = toyCliRead(phSession, recvline, MAXLINE)) > 0)
-=======
-	while((n = toyCliRead(phSession, recvline, MAXLINE)) > 0)
->>>>>>> 2ca116daf386db45503a66c52d2ac25724ee1efb
     //while((n = SSL_read(((tCliSession*)phSession) -> ssl, recvline, MAXLINE)) > 0)
     {
         recvline[n] = 0;
