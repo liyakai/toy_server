@@ -56,8 +56,8 @@ int toyClient(void*phSession, int argc, char** argv)
 	
 	sockfd =  openConnection(argv[1], 60030);
     ((tCliSession*)phSession) -> sockfd = sockfd;
-	//if(((tCliSession*)phSession) -> bUseSSL)
-	if(1)
+	if(((tCliSession*)phSession) -> bUseSSL)
+	//if(1)
 	{
 	    SSL_CTX *ssl_ctx;
 	    SSL *ssl;
@@ -73,7 +73,7 @@ int toyClient(void*phSession, int argc, char** argv)
 		}
 		SSL_set_connect_state(ssl);
 	    SSL_set_fd(ssl, sockfd);   // attache socet descriptor
-	    if(SSL_connect(ssl)  == -1)   // perform the connection
+	    if(SSL_connect(ssl)  != 1)   // perform the connection
 	    {
 		    fprintf(stderr, "toyClient -->> SSL_connect failed\n");
 		    return -1;
@@ -87,8 +87,8 @@ int toyClient(void*phSession, int argc, char** argv)
 		SSL_CTX_free(ssl_ctx);
 	}
     fprintf(stderr, "###########toyClient  tag 5\n");
-//	while((n = toyCliRead(phSession, recvline, MAXLINE)) > 0)
-    while((n = SSL_read(((tCliSession*)phSession) -> ssl, recvline, MAXLINE)) > 0)
+    while((n = toyCliRead(phSession, recvline, MAXLINE)) > 0)
+    //while((n = SSL_read(((tCliSession*)phSession) -> ssl, recvline, MAXLINE)) > 0)
     {
         recvline[n] = 0;
         fprintf(stderr, "###########toyClient  tag 6\n");

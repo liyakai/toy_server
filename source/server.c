@@ -108,11 +108,13 @@ int toyServer(void*phInstance, int argc, char** argv)
 		   SSL_set_accept_state(ssl);
 		   SSL_set_fd(ssl, connfd);
 		   rv = SSL_accept(ssl);
-		   if(rv == -1)
+		   if(rv != 1)
 		   {
 			   fprintf(stderr, "toyServer -->> SSL_accept failed.\n");
 			   return SEC_API_SSLACCEPT_FAIL;
 		   }
+		   sprintf(buff, "ni hao ShangHai.");
+		   SSL_write(ssl, buff, strlen(buff));
 		   ((tSerInstance*)phInstance) -> ssl = ssl;
 		   fprintf(stderr, "ser ssl address: %p.\n", (((tSerInstance*)phInstance) -> ssl));
 	   }
@@ -152,7 +154,10 @@ int processRequest(void*phInstance)
             fprintf(stderr, ".ulErr:%ld, errno:%d, Reason:%s\n", ulErr, errno, pTmp);
 		    fprintf(stderr, "processRequest -->> toySerWrite fail.\n");
 		    return SEC_API_SERWRITE_FAIL;
-	    }
+	    } else 
+		{
+			fprintf(stderr, "processRequest -->> toySerWrite success.\n");
+		}
 	}
 	if(((tSerInstance*)phInstance) -> ssl)
 	{
