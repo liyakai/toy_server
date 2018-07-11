@@ -36,10 +36,14 @@ TOY_SERVER_API int toyClientSessionDestroy( void* phSession)
 		fprintf(stderr, "toyClientSessionCreate -->> phSession is NULL");
         return SEC_API_PARAMS_HASNULL;
 	}
+#if 0
 	if(((tCliSession*)phSession) -> ssl)
 	{
+		fprintf(stderr,"toyClientSessionDestroy-->> ssl address:%p\n",((tCliSession*)phSession) -> ssl);
+		SSL_shutdown(((tCliSession*)phSession) -> ssl);
 		SSL_free(((tCliSession*)phSession) -> ssl);
 	}
+#endif
 	free( (tCliSession*)phSession);
 	phSession = NULL;
 	return 0;
@@ -48,7 +52,8 @@ TOY_SERVER_API int toyClientSessionDestroy( void* phSession)
 
 int toyClient(void*phSession, int argc, char** argv)
 {
-    int sockfd, n;
+    int sockfd;
+	int  n;
     char recvline[MAXLINE+1];
     unsigned long ulErr = 0;
     char szErrMsg[1024] = {0};
@@ -89,14 +94,15 @@ int toyClient(void*phSession, int argc, char** argv)
 		}
 		((tCliSession*)phSession) -> ssl = ssl;
         fprintf(stderr, "cli ssl address: %p.\n", (((tCliSession*)phSession) -> ssl));
+		SSL_read(ssl, recvline, 0);
 		SSL_CTX_free(ssl_ctx);
 	}
     fprintf(stderr, "###########toyClient  tag 5\n");
-    while((n = toyCliRead(phSession, recvline, MAXLINE)) > 0)
-    //while((n = SSL_read(((tCliSession*)phSession) -> ssl, recvline, MAXLINE)) > 0)
+	while((n = toyCliRead(phSession, recvline, MAXLINE)) > 0)
     {
         recvline[n] = 0;
-        fprintf(stderr, "###########toyClient  tag 6\n");
+        //fprintf(stderr, "toyCliRead;  n = %d\n",n);
+		//fprintf(stderr, "received:%s\n",recvline);
         if(fputs(recvline, stdout) == EOF)
         {
 	        fprintf(stderr, "fputs error");
@@ -126,8 +132,8 @@ int toyCliRead(void*phSession, void *buf,int num)
 {
 	if(((tCliSession*)phSession) -> bUseSSL)
 	{
-		fprintf(stderr, "toyCliRead use SSL.\n");
-		fprintf(stderr, "cli ssl address: %p.\n", (((tCliSession*)phSession) -> ssl));
+//		fprintf(stderr, "toyCliRead use SSL.\n");
+//		fprintf(stderr, "cli ssl address: %p.\n", (((tCliSession*)phSession) -> ssl));
 		return SSL_read(((tCliSession*)phSession) -> ssl, buf, num);
 	} else 
 	{

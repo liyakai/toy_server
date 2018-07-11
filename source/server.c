@@ -94,9 +94,9 @@ int toyServer(void*phInstance, int argc, char** argv)
 		   return rv;
 	   }
    }
-   if(argc < 1)
+   if(argc < 2)
    {
-       fprintf(stderr, "short of port.\n");
+       fprintf(stderr, "Error:short of port.\n");
        return -1;
    }
    listenfd = openListener(atoi(argv[1]));

@@ -4,9 +4,10 @@ DIR_SRC = ../../source
 
 CFLAGS = -Wall -Werror -g
 DIR_INCLUDE = -I../../../include
-DIR_LDFLAGS = -L../../../libs/ -Wl,-rpath ../../../libs/ -ltoyserver -ldl -lcrypto -lssl -lpthread
+DIR_LDFLAGS = -ldl -lcrypto -lssl -lpthread -L../../../libs/ -Wl,-rpath ../../../libs/ -ltoyserver 
+#DIR_LDFLAGS =  -L../../../libs/ -Wl,-rpath ../../../libs/ -ltoyserver 
 
-all: serverTest clientTest
+all: serverTest clientTest cplib
 
 serverTest : $(DIR_SRC)/serverTest.c
 	rm -f $@
