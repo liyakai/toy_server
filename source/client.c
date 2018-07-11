@@ -36,14 +36,13 @@ TOY_SERVER_API int toyClientSessionDestroy( void* phSession)
 		fprintf(stderr, "toyClientSessionCreate -->> phSession is NULL");
         return SEC_API_PARAMS_HASNULL;
 	}
-#if 0
 	if(((tCliSession*)phSession) -> ssl)
 	{
 		fprintf(stderr,"toyClientSessionDestroy-->> ssl address:%p\n",((tCliSession*)phSession) -> ssl);
 		SSL_shutdown(((tCliSession*)phSession) -> ssl);
 		SSL_free(((tCliSession*)phSession) -> ssl);
+		((tCliSession*)phSession) -> ssl = NULL;
 	}
-#endif
 	free( (tCliSession*)phSession);
 	phSession = NULL;
 	return 0;
@@ -93,11 +92,11 @@ int toyClient(void*phSession, int argc, char** argv)
 		    showCerts(ssl);
 		}
 		((tCliSession*)phSession) -> ssl = ssl;
-        fprintf(stderr, "cli ssl address: %p.\n", (((tCliSession*)phSession) -> ssl));
+        // fprintf(stderr, "cli ssl address: %p.\n", (((tCliSession*)phSession) -> ssl));
 		SSL_read(ssl, recvline, 0);
 		SSL_CTX_free(ssl_ctx);
 	}
-    fprintf(stderr, "###########toyClient  tag 5\n");
+    // fprintf(stderr, "###########toyClient  tag 5\n");
 	while((n = toyCliRead(phSession, recvline, MAXLINE)) > 0)
     {
         recvline[n] = 0;
@@ -121,9 +120,11 @@ int toyClient(void*phSession, int argc, char** argv)
 	{
 	    SSL_shutdown(((tCliSession*)phSession) -> ssl);
         SSL_free(((tCliSession*)phSession) -> ssl);
+		((tCliSession*)phSession) -> ssl = NULL;
 	} else 
 	{
 		close(((tCliSession*)phSession) -> sockfd);
+		((tCliSession*)phSession) -> sockfd = 0;
 	}
     return (0);
 }
