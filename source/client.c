@@ -66,35 +66,12 @@ int toyClient(void*phSession, int argc, char** argv)
 	sockfd =  openConnection(argv[1], atoi(argv[2]));
     ((tCliSession*)phSession) -> sockfd = sockfd;
 	if(((tCliSession*)phSession) -> bUseSSL)
-	//if(1)
 	{
-	    SSL_CTX *ssl_ctx;
-	    SSL *ssl;
-	    ssl_ctx = initCliSslCtx();
-		if(!ssl_ctx)
+		((tCliSession*)phSession) -> ssl = getCliSsl(sockfd);
+		if(((tCliSession*)phSession) -> ssl)
 		{
-			fprintf(stderr, "toyClient -->> initCliSslCtx failed.\n");
+			fprintf(stderr, "generate SSL  from sockfd failed.\n ");
 		}
-	    ssl = SSL_new(ssl_ctx);    // create new SSL connection state
-		if(!ssl)
-		{
-			fprintf(stderr, "toyClient -->> SSL_new failed.\n");
-		}
-		SSL_set_connect_state(ssl);
-	    SSL_set_fd(ssl, sockfd);   // attache socet descriptor
-	    if(SSL_connect(ssl)  != 1)   // perform the connection
-	    {
-		    fprintf(stderr, "toyClient -->> SSL_connect failed\n");
-		    return -1;
-	    } else 
-		{
-			printf("toyClient -->> Connected with %s encryption\n", SSL_get_cipher(ssl));
-		    showCerts(ssl);
-		}
-		((tCliSession*)phSession) -> ssl = ssl;
-        // fprintf(stderr, "cli ssl address: %p.\n", (((tCliSession*)phSession) -> ssl));
-		SSL_read(ssl, recvline, 0);
-		SSL_CTX_free(ssl_ctx);
 	}
     // fprintf(stderr, "###########toyClient  tag 5\n");
 	while((n = toyCliRead(phSession, recvline, MAXLINE)) > 0)

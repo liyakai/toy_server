@@ -19,6 +19,7 @@ int showCerts(SSL* ssl);
 
 int openConnection(const char* ipAddr, int port);
 SSL_CTX* initCliSslCtx(void);
+SSL* getCliSsl(int sockfd);
 
 int toyCliRead(void*phSession, void *buf,int num);
 int toyCliWrite(void*phSession, void *buf,int num);

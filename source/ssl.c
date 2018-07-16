@@ -144,4 +144,35 @@ SSL_CTX* initCliSslCtx(void)
 	return ctx;
 }
 
-
+SSL* getCliSsl(int sockfd)
+{
+	SSL_CTX *ssl_ctx;
+    SSL *ssl;
+	char recvline[1];
+    ssl_ctx = initCliSslCtx();
+    if(!ssl_ctx)
+    {
+        fprintf(stderr, "toyClient -->> initCliSslCtx failed.\n");
+		return NULL;
+    }
+    ssl = SSL_new(ssl_ctx);    // create new SSL connection state
+    if(!ssl)
+    {
+        fprintf(stderr, "toyClient -->> SSL_new failed.\n");
+		return NULL;
+    }
+    SSL_set_connect_state(ssl);
+    SSL_set_fd(ssl, sockfd);   // attache socet descriptor
+    if(SSL_connect(ssl)  != 1)   // perform the connection
+    {
+        fprintf(stderr, "toyClient -->> SSL_connect failed\n");
+        return NULL;
+    } else
+    {
+        printf("toyClient -->> Connected with %s encryption\n", SSL_get_cipher(ssl));
+		showCerts(ssl);
+    }
+    SSL_read(ssl, recvline, 0);
+    SSL_CTX_free(ssl_ctx);
+	return ssl;
+}
