@@ -2,7 +2,6 @@
 #define TOY_SERVER_PRIVATE
 
 #include "toyServer.h"
-#include "toyLogcb.h"
 #include "toyServerErrcode.h"
 #include <unistd.h>
 #include <netinet/in.h>
@@ -16,18 +15,22 @@ typedef struct TagSrvCtx{
 extern FuncLibLogWrite toyLog;
 extern void* toyLogHandle;
 
-#define LOG(logLevel, message) \
+#define LOG(logLevel, message,...) \
         if(toyLog) \
         { \
-            toyLog(toyLogHandle, logLevel, message); \
+            toyLogVar(toyLogHandle, logLevel, message, ##__VA_ARGS__); \
         }
 
-#define LOG_FATAL(message) LOG(COM_LOG_LEVEL_FATAL, message)
-#define LOG_ERROR(message) LOG(COM_LOG_LEVEL_ERROR, message)
-#define LOG_WARN(message) LOG(COM_LOG_LEVEL_WARN, message)
-#define LOG_INFO(message) LOG(COM_LOG_LEVEL_INFO, message)
-#define LOG_DEBUG(message) LOG(COM_LOG_LEVEL_DEBUG, message)
-#define LOG_TRACE(message) LOG(COM_LOG_LEVEL_TRACE, message)
+#define LOG_FATAL(message,...) LOG(COM_LOG_LEVEL_FATAL, message, ##__VA_ARGS__)
+#define LOG_ERROR(message,...) LOG(COM_LOG_LEVEL_ERROR, message, ##__VA_ARGS__)
+#define LOG_WARN(message,...) LOG(COM_LOG_LEVEL_WARN, message, ##__VA_ARGS__)
+#define LOG_INFO(message,...) LOG(COM_LOG_LEVEL_INFO, message, ##__VA_ARGS__)
+#define LOG_DEBUG(message,...) LOG(COM_LOG_LEVEL_DEBUG, message, ##__VA_ARGS__)
+#define LOG_TRACE(message,...) LOG(COM_LOG_LEVEL_TRACE, message, ##__VA_ARGS__)
+
+// log function
+int toyLogVar(void* logHandle, int level, const char *fmt, ...);
+
 
 int openListener(int port);
 SSL_CTX* initServerSslCtx(void);

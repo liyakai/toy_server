@@ -20,7 +20,7 @@ TOY_SERVER_API int toyClientSessionCreate(TSecCliSetting *tSetting, void** phSes
 {
 	if(tSetting == NULL)
 	{
-		fprintf(stderr, "toyClientSessionCreate -->> tSetting is NULL");
+		LOG_ERROR("toyClientSessionCreate -->> tSetting is NULL");
         return SEC_API_PARAMS_HASNULL;
 	}
 	*phSession =  (tCliSession*)malloc(sizeof(tCliSession));
@@ -33,12 +33,12 @@ TOY_SERVER_API int toyClientSessionDestroy( void* phSession)
 
 	if(phSession == NULL)
 	{
-		fprintf(stderr, "toyClientSessionCreate -->> phSession is NULL");
+		LOG_ERROR("toyClientSessionCreate -->> phSession is NULL");
         return SEC_API_PARAMS_HASNULL;
 	}
 	if(((tCliSession*)phSession) -> ssl)
 	{
-		fprintf(stderr,"toyClientSessionDestroy-->> ssl address:%p\n",((tCliSession*)phSession) -> ssl);
+		LOG_ERROR("toyClientSessionDestroy-->> ssl address:%p\n",((tCliSession*)phSession) -> ssl);
 		SSL_shutdown(((tCliSession*)phSession) -> ssl);
 		SSL_free(((tCliSession*)phSession) -> ssl);
 		((tCliSession*)phSession) -> ssl = NULL;
@@ -60,7 +60,7 @@ int toyClient(void*phSession, int argc, char** argv)
 	 
     if(argc < 2)
     {
-        fprintf(stderr, "usage:xxx IPaddr port\n");
+        LOG_ERROR("usage:xxx IPaddr port\n");
     }
 
 	sockfd =  openConnection(argv[1], atoi(argv[2]));
@@ -70,7 +70,7 @@ int toyClient(void*phSession, int argc, char** argv)
 		((tCliSession*)phSession) -> ssl = getCliSsl(sockfd);
 		if(((tCliSession*)phSession) -> ssl)
 		{
-			fprintf(stderr, "generate SSL  from sockfd failed.\n ");
+			LOG_ERROR("generate SSL  from sockfd failed.\n ");
 		}
 	}
     // fprintf(stderr, "###########toyClient  tag 5\n");
@@ -81,7 +81,7 @@ int toyClient(void*phSession, int argc, char** argv)
 		//fprintf(stderr, "received:%s\n",recvline);
         if(fputs(recvline, stdout) == EOF)
         {
-	        fprintf(stderr, "fputs error");
+	        LOG_ERROR("fputs error");
 			return -1;
 	    }
     }
@@ -90,7 +90,7 @@ int toyClient(void*phSession, int argc, char** argv)
 		ulErr = ERR_get_error(); // get err num
         pTmp = ERR_error_string(ulErr,szErrMsg); // 格式：error:errId:库:函数:原因
         ERR_print_errors_fp(stderr);
-		fprintf(stderr, "toyClient -->> toyCliRead  error.n = %d, ulErr:%ld, errno:%d, errnoStr:%s,  Reason:%s\n", n, ulErr, errno, strerror(errno), pTmp);
+		LOG_ERROR("toyClient -->> toyCliRead  error.n = %d, ulErr:%ld, errno:%d, errnoStr:%s,  Reason:%s\n", n, ulErr, errno, strerror(errno), pTmp);
 		return -1;
     }
 	if(((tCliSession*)phSession) -> bUseSSL)

@@ -15,6 +15,8 @@ extern "C" {
 #define TOY_SERVER_API __attribute__ ((visibility("default")))
 #endif
 
+#include "toyLogcb.h"
+
 TOY_SERVER_API int toySetLogCB(void *hLog, FuncLibLogWrite pfLogWrite);
 
 typedef struct tagSecSerSetting
