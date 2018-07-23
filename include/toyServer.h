@@ -24,6 +24,7 @@ typedef struct tagSecSerSetting
 	int bUseSSL;
 	const char* pszServerCert;
 	const char* pszServerKey;
+	const char* pszServerCA;
 } TSecSerSetting;
 
 TOY_SERVER_API int toyServerCreate(TSecSerSetting *tSetting, void** phInstance);
@@ -33,6 +34,9 @@ TOY_SERVER_API int toyServer(void* phInstance, int argc, char** argv);
 typedef struct tagSecCliSetting
 {
 	int bUseSSL;
+	const char* pszClientCert;
+	const char* pszClientKey;
+	const char* pszClientCA;
 } TSecCliSetting;
 
 TOY_SERVER_API int toyClientSessionCreate(TSecCliSetting *tSetting, void** phSession);

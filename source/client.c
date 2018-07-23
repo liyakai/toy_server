@@ -9,12 +9,7 @@
 #include "toyServer_private.h"
 
 #define MAXLINE (1024)
-typedef struct TagSerSession
-{
-    int bUseSSL;
-	int sockfd;
-	SSL* ssl;
-}tCliSession;
+
 
 TOY_SERVER_API int toyClientSessionCreate(TSecCliSetting *tSetting, void** phSession)
 {
@@ -26,6 +21,21 @@ TOY_SERVER_API int toyClientSessionCreate(TSecCliSetting *tSetting, void** phSes
 	*phSession =  (tCliSession*)malloc(sizeof(tCliSession));
 	memset(*phSession, 0, sizeof(tCliSession));
 	((tCliSession*)(*phSession)) -> bUseSSL = tSetting -> bUseSSL;
+	if(tSetting -> pszClientCert)
+	{
+		((tCliSession*)(*phSession)) -> pszClientCert = strdup(tSetting -> pszClientCert);
+	}
+
+	if(tSetting -> pszClientKey)
+	{
+		((tCliSession*)(*phSession)) -> pszClientKey = strdup(tSetting -> pszClientKey);
+	}
+
+	if(tSetting -> pszClientCA)
+	{
+		((tCliSession*)(*phSession)) -> pszClientCA = strdup(tSetting -> pszClientCA);
+	}
+
 	return 0;
 };
 TOY_SERVER_API int toyClientSessionDestroy( void* phSession)
@@ -45,6 +55,22 @@ TOY_SERVER_API int toyClientSessionDestroy( void* phSession)
 	}
 	free( (tCliSession*)phSession);
 	phSession = NULL;
+
+	if(((tCliSession*)phSession) -> pszClientCert)
+	{
+		free((void*)(((tCliSession*)phSession) -> pszClientCert));
+		((tCliSession*)phSession) -> pszClientCert  = NULL;
+	}
+	if(((tCliSession*)phSession) -> pszClientKey)
+	{
+		free((void*)(((tCliSession*)phSession) -> pszClientKey));
+		((tCliSession*)phSession) -> pszClientKey  = NULL;
+	}
+	if(((tCliSession*)phSession) -> pszClientCA)
+	{
+		free((void*)(((tCliSession*)phSession) -> pszClientCA));
+		((tCliSession*)phSession) -> pszClientCA  = NULL;
+	}
 	return 0;
 };
 
@@ -67,7 +93,7 @@ int toyClient(void*phSession, int argc, char** argv)
     ((tCliSession*)phSession) -> sockfd = sockfd;
 	if(((tCliSession*)phSession) -> bUseSSL)
 	{
-		((tCliSession*)phSession) -> ssl = getCliSsl(sockfd);
+		((tCliSession*)phSession) -> ssl = getCliSsl(phSession, sockfd);
 		if(((tCliSession*)phSession) -> ssl)
 		{
 			LOG_ERROR("generate SSL  from sockfd failed.\n ");

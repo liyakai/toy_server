@@ -28,18 +28,38 @@ extern void* toyLogHandle;
 #define LOG_DEBUG(message,...) LOG(COM_LOG_LEVEL_DEBUG, message, ##__VA_ARGS__)
 #define LOG_TRACE(message,...) LOG(COM_LOG_LEVEL_TRACE, message, ##__VA_ARGS__)
 
+typedef struct TagSerSession
+{
+    int bUseSSL;
+	const char* pszClientCert;
+	const char* pszClientKey;
+	const char* pszClientCA;
+	int sockfd;
+	SSL* ssl;
+}tCliSession;
+
+typedef struct TagSerInstance
+{
+    int bUseSSL;
+    const char* pszServerCert;
+	const char* pszServerKey;
+	const char* pszServerCA;
+
+	int connfd;
+    SSL* ssl;
+}tSerInstance;
+
 // log function
 int toyLogVar(void* logHandle, int level, const char *fmt, ...);
 
-
 int openListener(int port);
 SSL_CTX* initServerSslCtx(void);
-int loadCertFile(SSL_CTX* ctx, const char* CertFile, const char* KeyFile);
+int loadCertFile(SSL_CTX* ctx, const char* CertFile, const char* KeyFile, const char* caFile);
 int showCerts(SSL* ssl);
 
 int openConnection(const char* ipAddr, int port);
 SSL_CTX* initCliSslCtx(void);
-SSL* getCliSsl(int sockfd);
+SSL* getCliSsl(void*phSession, int sockfd);
 
 int toyCliRead(void*phSession, void *buf,int num);
 int toyCliWrite(void*phSession, void *buf,int num);
