@@ -68,9 +68,10 @@ int toyClient(void*phSession, int argc, char** argv)
 	if(((tCliSession*)phSession) -> bUseSSL)
 	{
 		((tCliSession*)phSession) -> ssl = getCliSsl(sockfd);
-		if(((tCliSession*)phSession) -> ssl)
+		if(!((tCliSession*)phSession) -> ssl)
 		{
 			LOG_ERROR("generate SSL  from sockfd failed.\n ");
+			return -1;
 		}
 	}
     // fprintf(stderr, "###########toyClient  tag 5\n");

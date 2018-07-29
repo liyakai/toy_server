@@ -34,6 +34,6 @@ int main(int argc, char** argv)
 
 int clientLog(void *hLog, int nLevel, const char *szMessage)
 {
-    fprintf(stderr, "%s_level:%d_%s\n",hLog, nLevel, szMessage);
+    fprintf(stderr, "%s_level:%d_%s\n",(char*)hLog, nLevel, szMessage);
     return 0;
 };
