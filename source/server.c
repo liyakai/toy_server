@@ -13,15 +13,7 @@ int processRequest(void* phInstance);
 #define MAXLINE 1024
 #define LISTENQ 1024
 
-typedef struct TagSerInstance
-{
-    int bUseSSL;
-    const char* pszServerCert;
-	const char* pszServerKey;
 
-	int connfd;
-    SSL* ssl;
-}tSerInstance;
 
 TOY_SERVER_API int toyServerCreate(TSecSerSetting *tSetting, void** phInstance)
 {
@@ -42,6 +34,11 @@ TOY_SERVER_API int toyServerCreate(TSecSerSetting *tSetting, void** phInstance)
 	if(tSetting -> pszServerKey)
 	{
 		((tSerInstance*)(*phInstance)) -> pszServerKey = strdup(tSetting -> pszServerKey);
+	}
+
+	if(tSetting -> pszServerCA)
+	{
+		((tSerInstance*)(*phInstance)) -> pszServerCA = strdup(tSetting -> pszServerCA);
 	}
 	return 0;
 };
@@ -65,6 +62,12 @@ TOY_SERVER_API int toyServerDestroy( void* phInstance)
 		free((void*)(((tSerInstance*)phInstance) -> pszServerKey));
 		((tSerInstance*)phInstance) -> pszServerKey  = NULL;
 	};
+
+	if(((tSerInstance*)phInstance) -> pszServerCA)
+	{
+		free((void*)(((tSerInstance*)phInstance) -> pszServerCA));
+		((tSerInstance*)phInstance) -> pszServerCA  = NULL;
+	}
 	close(((tSerInstance*)phInstance) -> connfd);
 	SSL_free(((tSerInstance*)phInstance) -> ssl);
 	free((tSerInstance*)phInstance);
@@ -88,7 +91,8 @@ int toyServer(void*phInstance, int argc, char** argv)
 	   ctx = initServerSslCtx();
 	   LOG_INFO("Server Cert Path:\n%s\n",((tSerInstance*)phInstance) -> pszServerCert);
 	   LOG_INFO("Server Key Path:\n%s\n",((tSerInstance*)phInstance) -> pszServerKey);
-	   rv  = loadCertFile(ctx, ((tSerInstance*)phInstance) -> pszServerCert, ((tSerInstance*)phInstance) -> pszServerKey);
+	   LOG_INFO("Server CA Path:\n%s\n",((tSerInstance*)phInstance) -> pszServerCA);
+	   rv  = loadCertFile(ctx, ((tSerInstance*)phInstance) -> pszServerCert, ((tSerInstance*)phInstance) -> pszServerKey, ((tSerInstance*)phInstance) -> pszServerCA);
 	   if(rv)
 	   {
 		   return rv;

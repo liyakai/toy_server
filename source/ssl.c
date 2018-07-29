@@ -50,30 +50,44 @@ SSL_CTX* initServerSslCtx(void)
 }
 
 // server
-int loadCertFile(SSL_CTX* ctx, const char* CertFile, const char* KeyFile)
+int loadCertFile(SSL_CTX* ctx, const char* CertFile, const char* KeyFile, const char* caFile)
 {
+	if(!ctx)
+	{
+		LOG_ERROR("loadCertFile -->> SEC_API_PARAMS_HASNULL\n");
+		return SEC_API_PARAMS_HASNULL;
+	}
 	// load cert
-	if(SSL_CTX_use_certificate_file(ctx, CertFile, SSL_FILETYPE_PEM) <= 0)
+	if(CertFile && SSL_CTX_use_certificate_file(ctx, CertFile, SSL_FILETYPE_PEM) <= 0)
 	{
 		ERR_print_errors_fp(stderr);
+		LOG_ERROR("loadCertFile -->> load CertFile failed\n");
 		return SEC_CONN_READ_CERTFILE_FAIL;
 	}
 
 	// load private key
-	if(SSL_CTX_use_PrivateKey_file(ctx,KeyFile, SSL_FILETYPE_PEM) <= 0)
+	if(KeyFile && SSL_CTX_use_PrivateKey_file(ctx,KeyFile, SSL_FILETYPE_PEM) <= 0)
 	{
 		ERR_print_errors_fp(stderr);
+		LOG_ERROR("loadCertFile -->> load KeyFile failed\n");
 		return SEC_CONN_READ_PRIVATEKEY_FAIL;
 
 	}
 
 	// check private key
-	if(!SSL_CTX_check_private_key(ctx))
+	if(CertFile && KeyFile && !SSL_CTX_check_private_key(ctx))
 	{
 		LOG_ERROR("Private key does not match the cert\n");
 		return SEC_CONN_PRIVATEKEY_NOTMATCH_CERT;
 	}
-	LOG_INFO("LoadCertificates Compleate Successfully...\n");
+
+    // load ca file
+	if(caFile && !SSL_CTX_load_verify_locations(ctx, caFile, 0))
+	{
+		LOG_ERROR("loadCertFile -->> load cafile failed\n");
+		return SEC_CONN_READ_CAFILE_FAIL;
+	}
+	LOG_INFO("loadCertFile -->> LoadCertificates Compleate Successfully...\n");
     return SEC_OK;
 }
 
@@ -144,8 +158,9 @@ SSL_CTX* initCliSslCtx(void)
 	return ctx;
 }
 
-SSL* getCliSsl(int sockfd)
+SSL* getCliSsl(void*phSession, int sockfd)
 {
+	int rv = 0;
 	SSL_CTX *ssl_ctx;
     SSL *ssl;
 	char recvline[1];
@@ -155,6 +170,14 @@ SSL* getCliSsl(int sockfd)
         LOG_ERROR("toyClient -->> initCliSslCtx failed.\n");
 		return NULL;
     }
+	LOG_INFO("Client Cert Path:\n%s\n",((tCliSession*)phSession) -> pszClientCert);
+	LOG_INFO("Client Key Path:\n%s\n",((tCliSession*)phSession) -> pszClientKey);
+	LOG_INFO("Client CA Path:\n%s\n",((tCliSession*)phSession) -> pszClientCA);
+	rv  = loadCertFile(ssl_ctx, ((tCliSession*)phSession) -> pszClientCert, ((tCliSession*)phSession) -> pszClientKey, ((tCliSession*)phSession) -> pszClientCA);
+	if(rv)
+	{
+		return NULL;
+	}
     ssl = SSL_new(ssl_ctx);    // create new SSL connection state
     if(!ssl)
     {
