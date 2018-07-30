@@ -6,7 +6,11 @@ int clientLog(void *hLog, int nLevel, const char *szMessage);
 int main(int argc, char** argv)
 {
 	int rv = 0;
-	TSecCliSetting setting = {1};
+	TSecCliSetting setting = {
+        1,                                 // whether to use ssl
+        "../../../certs/server.pem",       // Cert Path
+		"../../../certs/skey.pem",         // Key Path
+        };
     void* phSession = NULL;
 	
     toySetLogCB("some logs about client", clientLog);

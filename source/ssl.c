@@ -120,6 +120,7 @@ int openConnection(const char* ipAddr, int port)
 {
 	int sd;
 	struct sockaddr_in addr;
+	LOG_INFO("openConnection -->> ipAddr:%s; port:%d\n", ipAddr, port);
 	sd = socket(AF_INET, SOCK_STREAM, 0);
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
@@ -167,7 +168,7 @@ SSL* getCliSsl(void*phSession, int sockfd)
     ssl_ctx = initCliSslCtx();
     if(!ssl_ctx)
     {
-        LOG_ERROR("toyClient -->> initCliSslCtx failed.\n");
+        LOG_ERROR("getCliSsl -->> initCliSslCtx failed.\n");
 		return NULL;
     }
 	LOG_INFO("Client Cert Path:\n%s\n",((tCliSession*)phSession) -> pszClientCert);
@@ -176,23 +177,24 @@ SSL* getCliSsl(void*phSession, int sockfd)
 	rv  = loadCertFile(ssl_ctx, ((tCliSession*)phSession) -> pszClientCert, ((tCliSession*)phSession) -> pszClientKey, ((tCliSession*)phSession) -> pszClientCA);
 	if(rv)
 	{
+		LOG_ERROR("getCliSsl -->> loadCertFile.\n");
 		return NULL;
 	}
     ssl = SSL_new(ssl_ctx);    // create new SSL connection state
     if(!ssl)
     {
-        LOG_ERROR("toyClient -->> SSL_new failed.\n");
+        LOG_ERROR("getCliSsl -->> SSL_new failed.\n");
 		return NULL;
     }
     SSL_set_connect_state(ssl);
     SSL_set_fd(ssl, sockfd);   // attache socet descriptor
     if(SSL_connect(ssl)  != 1)   // perform the connection
     {
-        LOG_ERROR("toyClient -->> SSL_connect failed\n");
+        LOG_ERROR("getCliSsl -->> SSL_connect failed\n");
         return NULL;
     } else
     {
-        LOG_INFO("toyClient -->> Connected with %s encryption\n", SSL_get_cipher(ssl));
+        LOG_INFO("getCliSsl -->> Connected with %s encryption\n", SSL_get_cipher(ssl));
 		showCerts(ssl);
     }
     SSL_read(ssl, recvline, 0);
