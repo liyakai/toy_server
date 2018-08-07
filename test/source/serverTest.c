@@ -12,6 +12,7 @@ int main(int argc, char** argv)
 		1,                                // whether to use ssl
 		"../../../certs/server.pem",       // Cert Path
 		"../../../certs/skey.pem",         // Key Path
+		"../../../certs/intca.pem",        // ca Path
 
 	};
 	void* phInstance = NULL;
