@@ -10,9 +10,10 @@ int main(int argc, char** argv)
 	fprintf(stderr, "running Server...\n");
     TSecSerSetting setting = {
 		1,                                // whether to use ssl
-		"../../../certs/server.pem",       // Cert Path
-		"../../../certs/skey.pem",         // Key Path
-		"../../../certs/intca.pem",        // ca Path
+		1,                                 // whether to verify peer cert
+		"../../../certs/server.crt",       // Cert Path
+		"../../../certs/server.key",         // Key Path
+		"../../../certs/rootca.crt",        // ca Path
 
 	};
 	void* phInstance = NULL;

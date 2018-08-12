@@ -22,6 +22,7 @@ TOY_SERVER_API int toySetLogCB(void *hLog, FuncLibLogWrite pfLogWrite);
 typedef struct tagSecSerSetting
 {
 	int bUseSSL;
+	int bVerifyPeerCert;
 	const char* pszServerCert;
 	const char* pszServerKey;
 	const char* pszServerCA;
@@ -34,6 +35,7 @@ TOY_SERVER_API int toyServer(void* phInstance, int argc, char** argv);
 typedef struct tagSecCliSetting
 {
 	int bUseSSL;
+	int bVerifyPeerCert;
 	const char* pszClientCert;
 	const char* pszClientKey;
 	const char* pszClientCA;

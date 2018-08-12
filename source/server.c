@@ -25,6 +25,7 @@ TOY_SERVER_API int toyServerCreate(TSecSerSetting *tSetting, void** phInstance)
 	*phInstance = (tSerInstance*)malloc(sizeof(tSerInstance));
 	memset(*phInstance, 0, sizeof(tSerInstance));
     ((tSerInstance*)(*phInstance)) -> bUseSSL = tSetting -> bUseSSL;
+	((tSerInstance*)(*phInstance)) -> bVerifyPeerCert = tSetting -> bVerifyPeerCert;
 	
 	if(tSetting -> pszServerCert)
 	{
@@ -98,6 +99,10 @@ int toyServer(void*phInstance, int argc, char** argv)
 		   return rv;
 	   }
    }
+   	if(((tSerInstance*)phInstance) -> bVerifyPeerCert)
+	{
+		SSL_CTX_set_verify(ctx,SSL_VERIFY_PEER,NULL);
+    }
    if(argc < 2)
    {
        LOG_ERROR("Error:short of port.\n");
@@ -122,6 +127,7 @@ int toyServer(void*phInstance, int argc, char** argv)
 			   LOG_ERROR("toyServer -->> SSL_accept failed.\n");
 			   return SEC_API_SSLACCEPT_FAIL;
 		   }
+		   showCerts(ssl);
 		   sprintf(buff, "ni hao ShangHai.");
 		   SSL_write(ssl, buff, strlen(buff));
 		   ((tSerInstance*)phInstance) -> ssl = ssl;

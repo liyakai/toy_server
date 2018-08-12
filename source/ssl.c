@@ -99,7 +99,7 @@ int showCerts(SSL* ssl)
 	cert = SSL_get_peer_certificate(ssl);
 	if(cert)
 	{
-		LOG_INFO("Peer certificates:\n");
+		LOG_INFO("Peer certificates-->\n");
 		line = X509_NAME_oneline(X509_get_subject_name(cert), 0, 0);
 		LOG_INFO("SUbject:%s\n", line);
 		line = X509_NAME_oneline(X509_get_issuer_name(cert), 0, 0);
@@ -171,6 +171,10 @@ SSL* getCliSsl(void*phSession, int sockfd)
         LOG_ERROR("getCliSsl -->> initCliSslCtx failed.\n");
 		return NULL;
     }
+	if(((tCliSession*)(phSession)) -> bVerifyPeerCert )
+	{
+		SSL_CTX_set_verify(ssl_ctx,SSL_VERIFY_PEER,NULL);
+	}
 	LOG_INFO("Client Cert Path:\n%s\n",((tCliSession*)phSession) -> pszClientCert);
 	LOG_INFO("Client Key Path:\n%s\n",((tCliSession*)phSession) -> pszClientKey);
 	LOG_INFO("Client CA Path:\n%s\n",((tCliSession*)phSession) -> pszClientCA);

@@ -21,6 +21,7 @@ TOY_SERVER_API int toyClientSessionCreate(TSecCliSetting *tSetting, void** phSes
 	*phSession =  (tCliSession*)malloc(sizeof(tCliSession));
 	memset(*phSession, 0, sizeof(tCliSession));
 	((tCliSession*)(*phSession)) -> bUseSSL = tSetting -> bUseSSL;
+	((tCliSession*)(*phSession)) -> bVerifyPeerCert = tSetting -> bVerifyPeerCert;
 	if(tSetting -> pszClientCert)
 	{
 		((tCliSession*)(*phSession)) -> pszClientCert = strdup(tSetting -> pszClientCert);

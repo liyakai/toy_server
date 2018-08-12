@@ -31,6 +31,7 @@ extern void* toyLogHandle;
 typedef struct TagSerSession
 {
     int bUseSSL;
+    int bVerifyPeerCert;
 	const char* pszClientCert;
 	const char* pszClientKey;
 	const char* pszClientCA;
@@ -41,6 +42,7 @@ typedef struct TagSerSession
 typedef struct TagSerInstance
 {
     int bUseSSL;
+    int bVerifyPeerCert;
     const char* pszServerCert;
 	const char* pszServerKey;
 	const char* pszServerCA;

@@ -8,8 +8,10 @@ int main(int argc, char** argv)
 	int rv = 0;
 	TSecCliSetting setting = {
         1,                                 // whether to use ssl
-        "../../../certs/server.pem",       // Cert Path
-		"../../../certs/skey.pem",         // Key Path
+        1,                                 // whether to verify peer cert
+        "../../../certs/client.crt",       // Cert Path
+		"../../../certs/client.key",         // Key Path
+        "../../../certs/rootca.crt",        // ca Path
         };
     void* phSession = NULL;
 	
