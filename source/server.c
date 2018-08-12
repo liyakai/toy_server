@@ -129,9 +129,10 @@ int toyServer(void*phInstance, int argc, char** argv)
 		   }
 		   showCerts(ssl);
 		   sprintf(buff, "ni hao ShangHai.");
-		   SSL_write(ssl, buff, strlen(buff));
+		   //SSL_write(ssl, buff, strlen(buff));
+		   //SSL_write(ssl, buff, 0);
 		   ((tSerInstance*)phInstance) -> ssl = ssl;
-		   LOG_INFO("ser ssl address: %p.\n", (((tSerInstance*)phInstance) -> ssl));
+		   //LOG_INFO("ser ssl address: %p.\n", (((tSerInstance*)phInstance) -> ssl));
 	   }
 	   if((pid = fork()) == 0)
 	   {
@@ -149,26 +150,28 @@ int toyServer(void*phInstance, int argc, char** argv)
 int processRequest(void*phInstance)
 {
 	int rv = 0;
-    int i = 0;
+    // int i = 0;
     char buff[MAXLINE];
-    time_t ticks;
-    ticks = time(NULL);
-    unsigned long ulErr = 0;
-    char szErrMsg[1024] = {0};
-    char *pTmp = NULL;
+	int n = MAXLINE;
+    // time_t ticks;
+    // ticks = time(NULL);
+    // unsigned long ulErr = 0;
+    // char szErrMsg[1024] = {0};
+    // char *pTmp = NULL;
 	
 	
 	LOG_INFO("processRequest.\n");
+#if 0
     snprintf(buff, sizeof(buff), "ctime:%s\r\n",ctime(&ticks));
     for(i = 0; i < 1; i++)
 	{
 	    rv = toySerWrite(phInstance, buff, strlen(buff));
     	if(rv < 0)
 	    {
-			ulErr = ERR_get_error(); // get err num
-            pTmp = ERR_error_string(ulErr,szErrMsg); // 格式：error:errId:库:函数:原因
-            LOG_ERROR(".ulErr:%ld, errno:%d, Reason:%s\n", ulErr, errno, pTmp);
-		    LOG_ERROR("processRequest -->> toySerWrite fail.\n");
+			// ulErr = ERR_get_error(); // get err num
+            // pTmp = ERR_error_string(ulErr,szErrMsg); // 格式：error:errId:库:函数:原因
+            // LOG_ERROR(".ulErr:%ld, errno:%d, Reason:%s\n", ulErr, errno, pTmp);
+		    // LOG_ERROR("processRequest -->> toySerWrite fail.\n");
 		    return SEC_API_SERWRITE_FAIL;
 	    } else 
 		{
@@ -177,11 +180,30 @@ int processRequest(void*phInstance)
 	}
 	if(((tSerInstance*)phInstance) -> ssl)
 	{
-		LOG_INFO("processRequest -->> FREE ssl.\n");
+		// LOG_INFO("processRequest -->> FREE ssl.\n");
         // SSL_shutdown(((tSerInstance*)phInstance) -> ssl);
         // SSL_free(((tSerInstance*)phInstance) -> ssl);
 	}
-	return 0;
+#endif // if 0
+    while(n > 0)
+	{
+		memset(buff, 0, sizeof(buff));
+		while((n = toySerRead(phInstance, buff, sizeof(buff))) > 0)
+		{
+			LOG_INFO("processRequest -->> read from client(len:%d):\n%s\n", n, buff);
+			toySerWrite(phInstance, buff, n);
+			memset(buff, 0, sizeof(buff));
+		}
+		if(n < 0 && errno == EINTR)
+		{
+			n = -n;
+		} else if (n < 0)
+		{
+			LOG_ERROR("processRequest -->> toySerRead fail.\n");
+		}
+	}
+
+	return rv;
 }
 
 int toySerRead(void*phInstance, void *buf,int num)
@@ -200,12 +222,12 @@ int toySerWrite(void*phInstance, void *buf,int num)
 {
     if(((tSerInstance*)phInstance) -> bUseSSL)
     {
-		LOG_DEBUG("toySerWrite use SSl.\n");
-		LOG_DEBUG("ser ssl address: %p.\n", (((tSerInstance*)phInstance) -> ssl));
+		// LOG_DEBUG("toySerWrite use SSl.\n");
+		// LOG_DEBUG("ser ssl address: %p.\n", (((tSerInstance*)phInstance) -> ssl));
         return SSL_write(((tSerInstance*)phInstance) -> ssl, buf, num);
     } else
     {
-		fprintf(stderr, "toySerWrite NOT use SSl.connfd=%d\n", ((tSerInstance*)phInstance) -> connfd);
+		// fprintf(stderr, "toySerWrite NOT use SSl.connfd=%d\n", ((tSerInstance*)phInstance) -> connfd);
         return write(((tSerInstance*)phInstance) -> connfd, buf, num);
     }
 }

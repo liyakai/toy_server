@@ -81,10 +81,11 @@ int toyClient(void*phSession, int argc, char** argv)
 {
     int sockfd;
 	int  n;
+	char sendline[MAXLINE+1];
     char recvline[MAXLINE+1];
-    unsigned long ulErr = 0;
-    char szErrMsg[1024] = {0};
-    char *pTmp = NULL;
+    // unsigned long ulErr = 0;
+    // char szErrMsg[1024] = {0};
+    // char *pTmp = NULL;
 	 
     if(argc < 2)
     {
@@ -102,12 +103,10 @@ int toyClient(void*phSession, int argc, char** argv)
 			return -1;
 		}
 	}
-    // fprintf(stderr, "###########toyClient  tag 5\n");
+#if 0
 	while((n = toyCliRead(phSession, recvline, MAXLINE)) > 0)
     {
         recvline[n] = 0;
-        //fprintf(stderr, "toyCliRead;  n = %d\n",n);
-		//fprintf(stderr, "received:%s\n",recvline);
         if(fputs(recvline, stdout) == EOF)
         {
 	        LOG_ERROR("fputs error");
@@ -122,6 +121,20 @@ int toyClient(void*phSession, int argc, char** argv)
 		LOG_ERROR("toyClient -->> toyCliRead  error.n = %d, ulErr:%ld, errno:%d, errnoStr:%s,  Reason:%s\n", n, ulErr, errno, strerror(errno), pTmp);
 		return -1;
     }
+#endif // if 0
+    while(fgets(sendline, MAXLINE, stdin) != NULL)
+	{
+		toyCliWrite(phSession, sendline, strlen(sendline));
+		memset(sendline, 0, sizeof(sendline));
+		memset(recvline, 0, sizeof(recvline));
+		if((n = toyCliRead(phSession, recvline, MAXLINE)) == 0)
+		{
+			LOG_ERROR("toyClient -->> server terminated prematurely.");
+		}
+		LOG_DEBUG("toyClient -->> recvline content(len:%d):\n%s", n, recvline);
+	}
+    
+
 	if(((tCliSession*)phSession) -> bUseSSL)
 	{
 	    SSL_shutdown(((tCliSession*)phSession) -> ssl);
@@ -144,7 +157,7 @@ int toyCliRead(void*phSession, void *buf,int num)
 		return SSL_read(((tCliSession*)phSession) -> ssl, buf, num);
 	} else 
 	{
-		fprintf(stderr, "toyCliRead.sockfd=%d\n", ((tCliSession*)phSession) -> sockfd);
+		// fprintf(stderr, "toyCliRead.sockfd=%d\n", ((tCliSession*)phSession) -> sockfd);
 		return read(((tCliSession*)phSession) -> sockfd, buf, num);
 	}
 }
