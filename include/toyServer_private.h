@@ -54,6 +54,10 @@ typedef struct TagSerInstance
 // log function
 int toyLogVar(void* logHandle, int level, const char *fmt, ...);
 
+typedef void Sigfunc(int);
+Sigfunc* signal(int signo, Sigfunc *func);
+void sig_chld(int signo);
+
 int openListener(int port);
 SSL_CTX* initServerSslCtx(void);
 int loadCertFile(SSL_CTX* ctx, const char* CertFile, const char* KeyFile, const char* caFile);

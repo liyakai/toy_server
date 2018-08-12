@@ -24,6 +24,7 @@ int openListener(int port)
 		LOG_ERROR("Can't configure listening port.\n");
 		return SEC_CONN_SOCKET_LISTEN_FAILED;
 	}
+	signal(SIGCHLD, sig_chld);
 	return sd;
 }
 

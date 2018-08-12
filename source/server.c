@@ -124,8 +124,14 @@ int toyServer(void*phInstance, int argc, char** argv)
 		   rv = SSL_accept(ssl);
 		   if(rv != 1)
 		   {
-			   LOG_ERROR("toyServer -->> SSL_accept failed.\n");
-			   return SEC_API_SSLACCEPT_FAIL;
+			   if(errno == EINTR)
+			   {
+				   continue; // back to for()
+			   } else
+			   {
+				   	LOG_ERROR("toyServer -->> SSL_accept failed.\n");
+			        return SEC_API_SSLACCEPT_FAIL;
+			   }
 		   }
 		   showCerts(ssl);
 		   sprintf(buff, "ni hao ShangHai.");
@@ -141,6 +147,7 @@ int toyServer(void*phInstance, int argc, char** argv)
 		   close(connfd);
 		   return 0;
 	   }
+	   LOG_INFO("child thread pid:%d\n",pid);
        close(connfd);
    }
    SSL_CTX_free(ctx);
