@@ -5,10 +5,14 @@
 #include<arpa/inet.h>
 #include<string.h>
 #include<unistd.h>
+#include<math.h>
+
 
 #include "toyServer_private.h"
 
 #define MAXLINE (1024)
+
+#define MAXFUN(num1,num2) (num1 > num2 ? num1 : num2)
 
 
 TOY_SERVER_API int toyClientSessionCreate(TSecCliSetting *tSetting, void** phSession)
@@ -122,6 +126,7 @@ int toyClient(void*phSession, int argc, char** argv)
 		return -1;
     }
 #endif // if 0
+#if 0 // normal way
     while(fgets(sendline, MAXLINE, stdin) != NULL)
 	{
 		toyCliWrite(phSession, sendline, strlen(sendline));
@@ -133,7 +138,48 @@ int toyClient(void*phSession, int argc, char** argv)
 		}
 		LOG_DEBUG("toyClient -->> recvline content(len:%d):\n%s", n, recvline);
 	}
-    
+#endif
+
+#if 1 // select way
+
+    {
+		int maxfdp1;
+		fd_set rset;
+	
+	    FD_ZERO(&rset);
+		for(;;)
+		{
+			FD_SET(fileno(stdin), &rset);
+			FD_SET(((tCliSession*)phSession) -> sockfd, &rset);
+			maxfdp1 = MAXFUN(fileno(stdin), sockfd) + 1;
+			select(maxfdp1, &rset, NULL, NULL, NULL);
+
+			if(FD_ISSET(((tCliSession*)phSession) -> sockfd, &rset))
+			{
+		        memset(recvline, 0, sizeof(recvline));
+
+				if((n = toyCliRead(phSession, recvline, MAXLINE)) == 0)
+		        {
+			        LOG_ERROR("toyClient -->> server terminated prematurely.");
+					return -1;
+		        }
+				LOG_DEBUG("toyClient -->> recvline content(len:%d):\n%s", n, recvline);
+			}
+
+			if(FD_ISSET(fileno(stdin), &rset))
+			{
+				memset(sendline, 0, sizeof(sendline));
+				if(fgets(sendline, MAXLINE, stdin) == NULL)
+				{
+					return 0;
+				}
+				toyCliWrite(phSession, sendline, strlen(sendline));
+			}
+
+		}
+	}
+
+#endif
 
 	if(((tCliSession*)phSession) -> bUseSSL)
 	{
@@ -152,12 +198,12 @@ int toyCliRead(void*phSession, void *buf,int num)
 {
 	if(((tCliSession*)phSession) -> bUseSSL)
 	{
-//		fprintf(stderr, "toyCliRead use SSL.\n");
-//		fprintf(stderr, "cli ssl address: %p.\n", (((tCliSession*)phSession) -> ssl));
+		//fprintf(stderr, "toyCliRead use SSL.\n");
+		//fprintf(stderr, "cli ssl address: %p.\n", (((tCliSession*)phSession) -> ssl));
 		return SSL_read(((tCliSession*)phSession) -> ssl, buf, num);
 	} else 
 	{
-		// fprintf(stderr, "toyCliRead.sockfd=%d\n", ((tCliSession*)phSession) -> sockfd);
+		//fprintf(stderr, "toyCliRead.sockfd=%d\n", ((tCliSession*)phSession) -> sockfd);
 		return read(((tCliSession*)phSession) -> sockfd, buf, num);
 	}
 }
@@ -167,9 +213,11 @@ int toyCliWrite(void*phSession, void *buf,int num)
 {
 	if(((tCliSession*)phSession) -> bUseSSL)
 	{ 
+		//fprintf(stderr, "toyCliWrite use SSL.\n");
 		return SSL_write(((tCliSession*)phSession) -> ssl, buf, num);
 	} else 
 	{
+		//fprintf(stderr, "toyCliWrite without SSL.\n");
 		return write(((tCliSession*)phSession) -> sockfd, buf, num);
 	}
 }
