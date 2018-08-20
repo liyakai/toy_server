@@ -1,5 +1,6 @@
 #include "toyServer_private.h"
 #include <string.h>
+#include<sys/wait.h>
 
 
 #define LISTENQ 1024

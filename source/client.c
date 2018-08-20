@@ -143,13 +143,16 @@ int toyClient(void*phSession, int argc, char** argv)
 #if 1 // select way
 
     {
-		int maxfdp1;
+		int maxfdp1, stdineof = 0;
 		fd_set rset;
 	
 	    FD_ZERO(&rset);
 		for(;;)
 		{
-			FD_SET(fileno(stdin), &rset);
+			if(stdineof == 0)
+			{
+				FD_SET(fileno(stdin), &rset);
+			}
 			FD_SET(((tCliSession*)phSession) -> sockfd, &rset);
 			maxfdp1 = MAXFUN(fileno(stdin), sockfd) + 1;
 			select(maxfdp1, &rset, NULL, NULL, NULL);
@@ -160,8 +163,15 @@ int toyClient(void*phSession, int argc, char** argv)
 
 				if((n = toyCliRead(phSession, recvline, MAXLINE)) == 0)
 		        {
-			        LOG_ERROR("toyClient -->> server terminated prematurely.");
-					return -1;
+					if(stdineof == 1)
+					{
+						return 0;
+					} else 
+					{
+						LOG_ERROR("toyClient -->> server terminated prematurely.");
+						return -1;
+					}
+			        
 		        }
 				LOG_DEBUG("toyClient -->> recvline content(len:%d):\n%s", n, recvline);
 			}
@@ -171,7 +181,10 @@ int toyClient(void*phSession, int argc, char** argv)
 				memset(sendline, 0, sizeof(sendline));
 				if(fgets(sendline, MAXLINE, stdin) == NULL)
 				{
-					return 0;
+					stdineof = 1;
+					shutdown(((tCliSession*)phSession) -> sockfd, SHUT_WR);
+					FD_CLR(((tCliSession*)phSession) -> sockfd, &rset);
+					continue;
 				}
 				toyCliWrite(phSession, sendline, strlen(sendline));
 			}
@@ -186,11 +199,10 @@ int toyClient(void*phSession, int argc, char** argv)
 	    SSL_shutdown(((tCliSession*)phSession) -> ssl);
         SSL_free(((tCliSession*)phSession) -> ssl);
 		((tCliSession*)phSession) -> ssl = NULL;
-	} else 
-	{
-		close(((tCliSession*)phSession) -> sockfd);
-		((tCliSession*)phSession) -> sockfd = 0;
 	}
+	close(((tCliSession*)phSession) -> sockfd);
+	((tCliSession*)phSession) -> sockfd = 0;
+	
     return (0);
 }
 

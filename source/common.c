@@ -1,6 +1,7 @@
 #include "toyServer_private.h"
 #include <string.h>
 #include <signal.h>
+#include <sys/wait.h>
 FuncLibLogWrite toyLog = NULL;
 void* toyLogHandle = NULL;
 TOY_SERVER_API int toySetLogCB(void *hLog, FuncLibLogWrite pfLogWrite)
