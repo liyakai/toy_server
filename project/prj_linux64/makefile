@@ -1,7 +1,7 @@
 DIR_ROOT = ../..
 CC = gcc
 CFLAGS = -Wall -Werror -g -fPIC
-DIR_INCLUDE = -I$(DIR_ROOT)/include
+DIR_INCLUDE = -I$(DIR_ROOT)/include -I$(DIR_ROOT)/../openssl/include
 DIR_SRC = $(DIR_ROOT)/source
 DIR_BIN = $(DIR_ROOT)/bin
 DIR_LIB = $(DIR_ROOT)/libs
