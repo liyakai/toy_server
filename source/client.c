@@ -26,6 +26,10 @@ TOY_SERVER_API int toyClientSessionCreate(TSecCliSetting *tSetting, void** phSes
 	memset(*phSession, 0, sizeof(tCliSession));
 	((tCliSession*)(*phSession)) -> bUseSSL = tSetting -> bUseSSL;
 	((tCliSession*)(*phSession)) -> bVerifyPeerCert = tSetting -> bVerifyPeerCert;
+	if(((tCliSession*)phSession) -> bUseSSL)
+	{
+		LOG_DEBUG("toyClient -->> use SSLxxxxxxxxx.\n");
+	}
 	if(tSetting -> pszClientCert)
 	{
 		((tCliSession*)(*phSession)) -> pszClientCert = strdup(tSetting -> pszClientCert);
@@ -100,6 +104,7 @@ int toyClient(void*phSession, int argc, char** argv)
     ((tCliSession*)phSession) -> sockfd = sockfd;
 	if(((tCliSession*)phSession) -> bUseSSL)
 	{
+		LOG_DEBUG("toyClient -->> use SSL.\n");
 		((tCliSession*)phSession) -> ssl = getCliSsl(phSession, sockfd);
 		if(!((tCliSession*)phSession) -> ssl)
 		{
@@ -179,6 +184,7 @@ int toyClient(void*phSession, int argc, char** argv)
 			if(FD_ISSET(fileno(stdin), &rset))
 			{
 				memset(sendline, 0, sizeof(sendline));
+				// if(read(fileno(stdin), sendline, MAXLINE) == 0)
 				if(fgets(sendline, MAXLINE, stdin) == NULL)
 				{
 					stdineof = 1;

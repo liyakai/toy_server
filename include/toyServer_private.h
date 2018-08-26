@@ -49,6 +49,8 @@ typedef struct TagSerInstance
 
 	int connfd;
     SSL* ssl;
+    int clientSocket[FD_SETSIZE];
+    SSL* clientSSL[FD_SETSIZE];
 }tSerInstance;
 
 // log function

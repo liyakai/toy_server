@@ -78,12 +78,14 @@ TOY_SERVER_API int toyServerDestroy( void* phInstance)
 
 int toyServer(void*phInstance, int argc, char** argv)
 {
-	int rv = 0;
-   int listenfd, connfd;
-//   struct sockaddr_in servaddr, clientaddr;
+   int rv = 0, i = 0;
+   int listenfd, connfd, maxi, maxfd, sockfd;
+   int nready;
+   fd_set rset, allset;
+   //struct sockaddr_in servaddr, clientaddr;
    struct sockaddr_in  clientaddr;
-   socklen_t len;
-   pid_t pid;
+   socklen_t clientLen;
+   //pid_t pid;
    char buff[MAXLINE];
    SSL_CTX* ctx;
    if(((tSerInstance*)phInstance) -> bUseSSL)
@@ -109,37 +111,96 @@ int toyServer(void*phInstance, int argc, char** argv)
        return -1;
    }
    listenfd = openListener(atoi(argv[1]));
+
+   maxfd = listenfd;
+   maxi = -1;
+   for(i = 0; i< FD_SETSIZE; i++)
+   {
+	   ((tSerInstance*)phInstance) -> clientSocket[i] = -1;
+	   ((tSerInstance*)phInstance) -> clientSSL[i] = NULL;
+   }
+   FD_ZERO(&allset);
+   FD_SET(listenfd, &allset);
+
    for(;;)
    {
-       connfd = accept(listenfd, (struct sockaddr*)&clientaddr, &len);
-	   ((tSerInstance*)phInstance) -> connfd = connfd;
-	   LOG_INFO("connection from %s, port %d\n", inet_ntop(AF_INET, &clientaddr.sin_addr, buff,sizeof(buff)), ntohs(clientaddr.sin_port));
-	   //fprintf(stderr, "after accept.\n");
-	   if(((tSerInstance*)phInstance) -> bUseSSL)
+	   rset = allset;
+	   LOG_INFO("before select: select one.\n");
+	   nready = select(maxfd+1, &rset, NULL, NULL, NULL);
+	   if(FD_ISSET(listenfd, &rset))
 	   {
-		   SSL *ssl;
-		   ssl = SSL_new(ctx);
-		   SSL_set_accept_state(ssl);
-		   SSL_set_fd(ssl, connfd);
-		   rv = SSL_accept(ssl);
-		   if(rv != 1)
-		   {
-			   if(errno == EINTR)
-			   {
-				   continue; // back to for()
-			   } else
-			   {
-				   	LOG_ERROR("toyServer -->> SSL_accept failed.\n");
-			        return SEC_API_SSLACCEPT_FAIL;
-			   }
-		   }
-		   showCerts(ssl);
-		   sprintf(buff, "ni hao ShangHai.");
-		   //SSL_write(ssl, buff, strlen(buff));
-		   //SSL_write(ssl, buff, 0);
-		   ((tSerInstance*)phInstance) -> ssl = ssl;
-		   //LOG_INFO("ser ssl address: %p.\n", (((tSerInstance*)phInstance) -> ssl));
+		    clientLen = sizeof(clientaddr);
+		    // LOG_INFO("after select: select one. nready is %d\n", nready);
+			connfd = accept(listenfd, (struct sockaddr*)&clientaddr, &clientLen);
+			// LOG_INFO("after select: connfd is %d.\n", connfd);
+			for(i = 0; i < FD_SETSIZE; i++)
+			{
+				if(((tSerInstance*)phInstance) -> clientSocket[i] < 0)
+				{
+					((tSerInstance*)phInstance) -> clientSocket[i] = connfd;
+					LOG_DEBUG("((tSerInstance*)phInstance) -> clientSocket[%d] is %d.\n", i, ((tSerInstance*)phInstance) -> clientSocket[i]);
+					break;
+				}
+			}
+			if(i == FD_SETSIZE)
+			{
+				LOG_ERROR("Error: too many clients.\n");
+				return -1;
+			}
+			FD_SET(connfd, &allset);
+			if(connfd > maxfd)
+			{
+				maxfd = connfd;
+			}
+			LOG_DEBUG("maxi=%d, i = %d.\n", maxi, i);
+			if(i > maxi)
+			{
+				maxi = i;
+			}
+			//((tSerInstance*)phInstance) -> connfd = connfd;
+			LOG_INFO("connection from %s, port %d\n", inet_ntop(AF_INET, &clientaddr.sin_addr, buff,sizeof(buff)), ntohs(clientaddr.sin_port));
+			//fprintf(stderr, "after accept.\n");
+			if(((tSerInstance*)phInstance) -> bUseSSL)
+			{
+				SSL *ssl;
+				ssl= SSL_new(ctx);
+				SSL_set_accept_state(ssl);
+				SSL_set_fd(ssl, connfd );
+				rv = SSL_accept(ssl);
+				if(rv != 1)
+				{
+					if(errno == EINTR)
+					{
+						LOG_DEBUG(" SSL_accept errno == EINTR \n");
+						continue; // back to for()
+					} else
+					{
+							LOG_ERROR("toyServer -->> SSL_accept failed.\n");
+							return SEC_API_SSLACCEPT_FAIL;
+					}
+				}
+				LOG_INFO("ssl handshake.\n");
+				showCerts(ssl);
+				sprintf(buff, "ni hao ShangHai.");
+				//SSL_write(ssl, buff, strlen(buff));
+				//SSL_write(ssl, buff, 0);
+				//((tSerInstance*)phInstance) -> ssl = ((tSerInstance*)phInstance) -> clientSSL[i];
+				((tSerInstance*)phInstance) -> clientSSL[i] = ssl;
+				if(((tSerInstance*)phInstance) -> clientSSL[i]) 
+				    LOG_DEBUG(" RIGHTRIGHTRIGHTRIGHT123. \n");
+					if(ssl) 
+				    LOG_DEBUG(" RIGHTRIGHTRIGHTRIGHT456. \n");
+				//LOG_INFO("ser ssl address: %p.\n", (((tSerInstance*)phInstance) -> ssl));
+			}
+			if(--nready <= 0)
+			{
+				continue;
+			}
 	   }
+	   
+	   
+	   LOG_DEBUG("next step is to process request.\n");
+#if 0
 	   if((pid = fork()) == 0)
 	   {
 		   close(listenfd);
@@ -150,10 +211,34 @@ int toyServer(void*phInstance, int argc, char** argv)
 	   LOG_INFO("child thread pid:%d\n",pid);
        close(connfd);
    }
-   SSL_CTX_free(ctx);
+#endif
+		for(i = 0; i <= maxi; i++)
+		{
+			LOG_DEBUG("for i = %d\n", i);
+			if((sockfd = ((tSerInstance*)phInstance) -> clientSocket[i]) < 0)
+			{
+				LOG_DEBUG("sockfd < 0\n");
+				continue;
+			}
+			if(FD_ISSET(sockfd, &rset))
+			{
+				LOG_DEBUG("next step is to processRequest\n");
+				((tSerInstance*)phInstance) -> connfd = ((tSerInstance*)phInstance) -> clientSocket[i];
+				((tSerInstance*)phInstance) -> ssl = ((tSerInstance*)phInstance) -> clientSSL[i];
+				if(((tSerInstance*)phInstance) -> ssl) 
+				    LOG_DEBUG(" RIGHTRIGHTRIGHTRIGHT. \n");
+				processRequest(phInstance);
+				if(--nready <= 0)
+				{
+					break;
+				}
+			}
+
+		}
+    }
+    SSL_CTX_free(ctx);
     return 0;
 }
-
 int processRequest(void*phInstance)
 {
 	int rv = 0;
@@ -197,17 +282,21 @@ int processRequest(void*phInstance)
 		memset(buff, 0, sizeof(buff));
 		while((n = toySerRead(phInstance, buff, sizeof(buff))) > 0)
 		{
+			LOG_DEBUG("tag1.\n");
 			LOG_INFO("processRequest -->> read from client(len:%d):\n%s\n", n, buff);
 			toySerWrite(phInstance, buff, n);
 			memset(buff, 0, sizeof(buff));
 		}
+		LOG_DEBUG("tag2.\n");
 		if(n < 0 && errno == EINTR)
 		{
 			n = -n;
+			LOG_DEBUG("tag3.\n");
 		} else if (n < 0)
 		{
 			LOG_ERROR("processRequest -->> toySerRead fail.\n");
 		}
+		LOG_DEBUG("tag4.\n");
 	}
 
 	return rv;

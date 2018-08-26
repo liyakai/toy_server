@@ -166,7 +166,7 @@ SSL* getCliSsl(void*phSession, int sockfd)
 	int rv = 0;
 	SSL_CTX *ssl_ctx;
     SSL *ssl;
-	char recvline[1];
+	//char recvline[1];
     ssl_ctx = initCliSslCtx();
     if(!ssl_ctx)
     {
@@ -203,7 +203,7 @@ SSL* getCliSsl(void*phSession, int sockfd)
         LOG_INFO("getCliSsl -->> Connected with %s encryption\n", SSL_get_cipher(ssl));
 		showCerts(ssl);
     }
-    SSL_read(ssl, recvline, 0);
+    //SSL_read(ssl, recvline, 0);
     SSL_CTX_free(ssl_ctx);
 	return ssl;
 }
