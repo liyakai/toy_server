@@ -69,8 +69,8 @@ TOY_SERVER_API int toyServerDestroy( void* phInstance)
 		free((void*)(((tSerInstance*)phInstance) -> pszServerCA));
 		((tSerInstance*)phInstance) -> pszServerCA  = NULL;
 	}
-	close(((tSerInstance*)phInstance) -> connfd);
 	SSL_free(((tSerInstance*)phInstance) -> ssl);
+	close(((tSerInstance*)phInstance) -> connfd);
 	free((tSerInstance*)phInstance);
 	phInstance = NULL;
     return 0;
@@ -186,10 +186,6 @@ int toyServer(void*phInstance, int argc, char** argv)
 				//SSL_write(ssl, buff, 0);
 				//((tSerInstance*)phInstance) -> ssl = ((tSerInstance*)phInstance) -> clientSSL[i];
 				((tSerInstance*)phInstance) -> clientSSL[i] = ssl;
-				if(((tSerInstance*)phInstance) -> clientSSL[i]) 
-				    LOG_DEBUG(" RIGHTRIGHTRIGHTRIGHT123. \n");
-					if(ssl) 
-				    LOG_DEBUG(" RIGHTRIGHTRIGHTRIGHT456. \n");
 				//LOG_INFO("ser ssl address: %p.\n", (((tSerInstance*)phInstance) -> ssl));
 			}
 			if(--nready <= 0)
@@ -198,8 +194,6 @@ int toyServer(void*phInstance, int argc, char** argv)
 			}
 	   }
 	   
-	   
-	   LOG_DEBUG("next step is to process request.\n");
 #if 0
 	   if((pid = fork()) == 0)
 	   {
@@ -214,7 +208,6 @@ int toyServer(void*phInstance, int argc, char** argv)
 #endif
 		for(i = 0; i <= maxi; i++)
 		{
-			LOG_DEBUG("for i = %d\n", i);
 			if((sockfd = ((tSerInstance*)phInstance) -> clientSocket[i]) < 0)
 			{
 				LOG_DEBUG("sockfd < 0\n");
@@ -222,12 +215,16 @@ int toyServer(void*phInstance, int argc, char** argv)
 			}
 			if(FD_ISSET(sockfd, &rset))
 			{
-				LOG_DEBUG("next step is to processRequest\n");
 				((tSerInstance*)phInstance) -> connfd = ((tSerInstance*)phInstance) -> clientSocket[i];
 				((tSerInstance*)phInstance) -> ssl = ((tSerInstance*)phInstance) -> clientSSL[i];
-				if(((tSerInstance*)phInstance) -> ssl) 
-				    LOG_DEBUG(" RIGHTRIGHTRIGHTRIGHT. \n");
-				processRequest(phInstance);
+				rv = processRequest(phInstance);
+				if(rv)
+				{
+					SSL_free(((tSerInstance*)phInstance) -> clientSSL[i]);
+	                close(((tSerInstance*)phInstance) -> clientSocket[i]);
+					FD_CLR(sockfd, &allset);
+					((tSerInstance*)phInstance) -> clientSocket[i] = -1;
+				}
 				if(--nready <= 0)
 				{
 					break;
@@ -277,26 +274,28 @@ int processRequest(void*phInstance)
         // SSL_free(((tSerInstance*)phInstance) -> ssl);
 	}
 #endif // if 0
-    while(n > 0)
+    //while(n > 0)
 	{
 		memset(buff, 0, sizeof(buff));
-		while((n = toySerRead(phInstance, buff, sizeof(buff))) > 0)
+		if((n = toySerRead(phInstance, buff, sizeof(buff))) > 0)
 		{
-			LOG_DEBUG("tag1.\n");
 			LOG_INFO("processRequest -->> read from client(len:%d):\n%s\n", n, buff);
 			toySerWrite(phInstance, buff, n);
 			memset(buff, 0, sizeof(buff));
 		}
-		LOG_DEBUG("tag2.\n");
 		if(n < 0 && errno == EINTR)
 		{
 			n = -n;
-			LOG_DEBUG("tag3.\n");
+			LOG_ERROR("processRequest -->> n < 0 && errno == EINTR.\n");
 		} else if (n < 0)
 		{
 			LOG_ERROR("processRequest -->> toySerRead fail.\n");
+			rv = SEC_CONN_SERVER_READ_FAIL;
 		}
-		LOG_DEBUG("tag4.\n");
+		if(n == 0)
+		{
+			rv = SEC_CONN_CLOSED_BY_CLIENT;
+		}
 	}
 
 	return rv;
