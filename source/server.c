@@ -117,7 +117,7 @@ int toyServer(void*phInstance, int argc, char** argv)
    maxi = 0;
    ((tSerInstance*)phInstance) -> clientPoll[0].fd = listenfd;
    ((tSerInstance*)phInstance) -> clientPoll[0].events = POLLRDNORM;
-   for(i = 0; i< FD_SETSIZE; i++)
+   for(i = 1; i< FD_SETSIZE; i++)
    {
 	   ((tSerInstance*)phInstance) -> clientSocket[i] = -1;
 	   ((tSerInstance*)phInstance) -> clientSSL[i] = NULL;
@@ -166,13 +166,14 @@ int toyServer(void*phInstance, int argc, char** argv)
 			LOG_INFO("connection from %s, port %d\n", inet_ntop(AF_INET, &clientaddr.sin_addr, buff,sizeof(buff)), ntohs(clientaddr.sin_port));
 			//fprintf(stderr, "after accept.\n");
 #endif
+        LOG_DEBUG("before poll: poll one.\n");
         nready = poll(((tSerInstance*)phInstance) -> clientPoll, maxi + 1, INFTIM);
+		LOG_DEBUG("after poll: nready is %d\n", nready);
 		if(((tSerInstance*)phInstance) -> clientPoll[0].revents & POLLRDNORM)
 		{
 			clientLen = sizeof(clientaddr);
-		    // LOG_INFO("after select: select one. nready is %d\n", nready);
 			connfd = accept(listenfd, (struct sockaddr*)&clientaddr, &clientLen);
-			// LOG_INFO("after select: connfd is %d.\n", connfd);
+			LOG_DEBUG("after accept: connfd is %d.\n", connfd);
 			for(i = 0; i < OPEN_MAX; i++)
 			{
 				if(((tSerInstance*)phInstance) -> clientPoll[i].fd < 0)
