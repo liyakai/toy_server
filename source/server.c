@@ -268,7 +268,7 @@ int toyServer(void*phInstance, int argc, char** argv)
 
 		}
 #endif
-		for(i = 0; i <= maxi; i++)
+		for(i = 1; i <= maxi; i++)
 		{
 			if((sockfd = ((tSerInstance*)phInstance) -> clientPoll[i].fd) < 0)
 			{
