@@ -41,6 +41,7 @@ typedef struct tagSecCliSetting
 	const char* pszClientCA;
 } TSecCliSetting;
 
+TOY_SERVER_API int getSocketOption();
 TOY_SERVER_API int toyClientSessionCreate(TSecCliSetting *tSetting, void** phSession);
 TOY_SERVER_API int toyClientSessionDestroy(void* phSession);
 TOY_SERVER_API int toyClient(void* phSession, int argc, char** argv);
