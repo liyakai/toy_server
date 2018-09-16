@@ -184,8 +184,8 @@ int toyClient(void*phSession, int argc, char** argv)
 			if(FD_ISSET(fileno(stdin), &rset))
 			{
 				memset(sendline, 0, sizeof(sendline));
-				// if(read(fileno(stdin), sendline, MAXLINE) == 0)
-				if(fgets(sendline, MAXLINE, stdin) == NULL)
+				if(read(fileno(stdin), sendline, MAXLINE) == 0)
+				// if(fgets(sendline, MAXLINE, stdin) == NULL)
 				{
 					stdineof = 1;
 					shutdown(((tCliSession*)phSession) -> sockfd, SHUT_WR);

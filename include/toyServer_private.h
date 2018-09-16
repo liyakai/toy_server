@@ -7,8 +7,13 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <sys/poll.h> 
 #include "openssl/ssl.h"
 #include "openssl/err.h"
+
+#define OPEN_MAX 1024
+#define INFTIM -1
+
 typedef struct TagSrvCtx{
 }tSrvCtx;
 
@@ -50,6 +55,7 @@ typedef struct TagSerInstance
 	int connfd;
     SSL* ssl;
     int clientSocket[FD_SETSIZE];
+    struct pollfd clientPoll[OPEN_MAX];
     SSL* clientSSL[FD_SETSIZE];
 }tSerInstance;
 
